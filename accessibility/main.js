@@ -30,6 +30,12 @@ function initMap() {
           } else if (row.length == 2) {
             var option = $('<option>').attr('value', row[0]).html(row[1]);
             optgroups[optgroup.length-1].append(option);
+            var locs = row[0].split(',');
+            var marker = new google.maps.Marker({
+              map: map,
+              position: new google.maps.LatLng(parseFloat(locs[0]),parseFloat(locs[1])),
+              icon: 'https://coinsmarkets.com/images/red-circle.png'
+            });
           }
         }
       }
