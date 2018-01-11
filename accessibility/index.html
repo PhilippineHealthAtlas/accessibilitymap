@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="Shortcut Icon" href="doh_icon.png" type="image/png" />
+    <title>Maps</title>
+    <!-- Bootstrap Core CSS -->
+    <link href="bootstrap.min.css" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="metisMenu.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="sb-admin-2.css">
+    <link rel="stylesheet" href="select2.css">
+    <link rel="stylesheet" href="select2-bootstrap.css">
+    <link rel="stylesheet" href="gh-pages.css">
+    <link rel="stylesheet" href="style.css">
+
+  </head>
+  <body>
+  <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+      </button>
+      <table>
+        <tr>
+          <td >
+            <a class="logoimages"><img src="doh_icon.png" alt="DOHLOGO"></a>
+          </td>
+          <td>
+            <a class="navbar-brand" href="index.html">Health Facility Maps</a>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </nav>
+
+  <div id="floating-panel">
+
+  <table>
+  <tr>
+    <td style="margin: 10,10,10,10; color:#63A62B">
+      <strong>Start: </strong>
+    </td>
+    <td>
+      <select id="start" class="form-control select2" style="width:600px">
+        <option value="">Select start facility</option>
+      </select>
+    </td>
+    <td>
+      <img class="adp-marker" jsvalues=".src:markerIconPaths[$waypointIndex]" jstcache="14" src="https://mts.googleapis.com/vt/icon/name=icons/spotlight/spotlight-waypoint-a.png&amp;text=A&amp;psize=16&amp;font=fonts/Roboto-Regular.ttf&amp;color=ff333333&amp;ax=44&amp;ay=48&amp;scale=1">
+    </td>
+  </tr>
+  <tr style="height: 10px">
+    <td colspan="3"></td>
+  </tr>
+  <tr>
+    <td style="margin: 10,10,10,10; color:#F75448">
+      <Strong> End: </Strong>
+    </td>
+    <td>
+      <select id="end" class="form-control select2">
+        <option value="">Select end facility</option>
+      </select>
+    </td>
+    <td>
+      <img class="adp-marker" jsvalues=".src:markerIconPaths[$waypointIndex]" jstcache="14" src="https://mts.googleapis.com/vt/icon/name=icons/spotlight/spotlight-waypoint-b.png&amp;text=B&amp;psize=16&amp;font=fonts/Roboto-Regular.ttf&amp;color=ff333333&amp;ax=44&amp;ay=48&amp;scale=1">
+    </td>
+  </tr>
+  </table>
+
+    <button class="btn btn-success" id="clickfind">
+      <i class='glyphicon glyphicon-road'></i> Go
+    </button>
+    <button class='btn btn-default' id='reset' href='Distance.html'>
+      <i class='glyphicon glyphicon-repeat'></i> Reset
+    </button>
+
+  </div>
+
+  <div id="right-panel"></div>
+    <div id="map"></div>
+    <script src="jquery.min.js"></script>
+    <script src="select2.js"></script>
+    <script src="main.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCpSSQH15TIodw3xWBhW2Sowjsbp9S7_UA&signed_in=true&callback=initMap" async defer></script>
+
+  </body>
+
+</html>
