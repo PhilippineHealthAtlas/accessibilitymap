@@ -1,6 +1,6 @@
 var map;
 var currData = [];
-var COL_LATLNG = 0, COL_NAME = 1;
+var COL_LATLNG = 0, COL_NAME = 1, COL_TYPE = 4;
 var region = location.href.match(/region=/) ? '_region_' + location.href.replace(/.+region=/g,'') : '';
 
 function initMap() {
@@ -31,11 +31,10 @@ function initMap() {
       document.getElementById('clickfind').addEventListener('click', onChangeHandler);
       
       var onFacilityTypeChange = function(obj) {
-        console.log(obj);
         reloadData(currData, obj.value);
       }
-      document.getElementById('end_facility_type').addEventListener('change', onFacilityTypeChange);
-      document.getElementById('start_facility_type').addEventListener('change', onFacilityTypeChange);
+      //document.getElementById('end_facility_type').addEventListener('change', onFacilityTypeChange);
+      //document.getElementById('start_facility_type').addEventListener('change', onFacilityTypeChange);
     }
   })
   
@@ -44,11 +43,11 @@ function initMap() {
     
     
     function reloadData(data, status) {
-      console.log(status);
       data = data.split("\n");
       currData = data;
       var optgroups = [];
       var facility_types = [], curr_facility_type = '';
+      var bounds = new google.maps.LatLngBounds();
       for (var k in data) {
         var row = data[k].split("\t");
         if (row[COL_LATLNG].length > 0) { // ignore empty first column
@@ -61,16 +60,20 @@ function initMap() {
             var option = $('<option>').attr('value', row[COL_LATLNG].replace(/"/g,'')).html(row[COL_NAME]);
             optgroups[optgroup.length-1].append(option);
             var locs = row[COL_LATLNG].replace(/[^0-9\.,]/g,'').split(',');
-            console.log(locs);
+            var position = new google.maps.LatLng(parseFloat(locs[0]),parseFloat(locs[1]));
+            bounds.extend(position);
             var marker = new google.maps.Marker({
               map: map,
-              position: new google.maps.LatLng(parseFloat(locs[0]),parseFloat(locs[1])),
+              position: position,
               title: row[COL_NAME],
-              icon: 'http://www.lecraft.pl/Serwery-Minecraft/images/dotsgroups/lightreddot.png'
+              icon: 'icons/' + row[COL_TYPE].toLowerCase().replace(/ /g,'_') + '.png'
             });
           }
         }
       }
+      console.log(bounds);
+      map.fitBounds(bounds);
+      map.setZoom(map.getZoom()+1);
       for (var k in optgroups) {
         $('.select2').append(optgroups[k]);
       }
