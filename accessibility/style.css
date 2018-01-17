@@ -59,8 +59,11 @@ html, body {
 }
 #floating-panel .select2-input, #floating-panel .select2 {
   min-width:40%;
-  width:600px;
+  width:500px;
   max-width:80%;
+}
+#floating-panel .select-facility-type {
+  width:300px;
 }
 
 @media print {
