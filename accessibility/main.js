@@ -1,9 +1,12 @@
-
+var map;
+var currData = [];
+var COL_LATLNG = 0, COL_NAME = 1;
+var region = location.href.match(/region=/) ? '_region_' + location.href.replace(/.+region=/g,'') : '';
 
 function initMap() {
-  var directionsDisplay = new google.maps.DirectionsRenderer;
-  var directionsService = new google.maps.DirectionsService;
-  var map = new google.maps.Map(document.getElementById('map'), {
+  var directionsDisplay = new google.maps.DirectionsRenderer();
+  var directionsService = new google.maps.DirectionsService();
+  map = new google.maps.Map(document.getElementById('map'), {
     zoom: 6,
     mapTypeControlOptions: {
       position: google.maps.ControlPosition.BOTTOM_CENTER
@@ -17,24 +20,53 @@ function initMap() {
   control.style.display = 'block';
   map.controls[google.maps.ControlPosition.TOP_CENTER].push(control);
 
-  $.ajax('health_facilities.tsv', {
-    success: function(data, status) {
+  $.ajax('health_facilities'+region+'.tsv', {
+    success: function (data, status) {
+      reloadData(data, status);
+      var onChangeHandler = function() {
+        calculateAndDisplayRoute(directionsService, directionsDisplay);
+      };
+      document.getElementById('start').addEventListener('change', onChangeHandler);
+      document.getElementById('end').addEventListener('change', onChangeHandler);
+      document.getElementById('clickfind').addEventListener('click', onChangeHandler);
+      
+      var onFacilityTypeChange = function(obj) {
+        console.log(obj);
+        reloadData(currData, obj.value);
+      }
+      document.getElementById('end_facility_type').addEventListener('change', onFacilityTypeChange);
+      document.getElementById('start_facility_type').addEventListener('change', onFacilityTypeChange);
+    }
+  })
+  
+}
+
+    
+    
+    function reloadData(data, status) {
+      console.log(status);
       data = data.split("\n");
+      currData = data;
       var optgroups = [];
+      var facility_types = [], curr_facility_type = '';
       for (var k in data) {
         var row = data[k].split("\t");
-        if (row[0].length > 0) { // ignore empty first column
-          if ((row.length == 1) || (row.length > 1 && row[1].length == 0)) {
-            var optgroup = $('<optgroup label="'+row[0]+'">');
+        if (row[COL_LATLNG].length > 0) { // ignore empty first column
+          if ((row.length == 1) || (row.length > 1 && row[COL_NAME].length == 0)) {
+            var optgroup = $('<optgroup label="'+row[COL_LATLNG]+'" id="'+stubify(row[COL_LATLNG])+'">');
             optgroups.push(optgroup);
-          } else if (row.length == 2) {
-            var option = $('<option>').attr('value', row[0]).html(row[1]);
+            facility_types.push(row[COL_LATLNG]);
+            curr_facility_type = row[COL_LATLNG];
+          } else if (row.length > 1 && row[COL_NAME].length > 0 && (status == 'success' || status == curr_facility_type)) {
+            var option = $('<option>').attr('value', row[COL_LATLNG].replace(/"/g,'')).html(row[COL_NAME]);
             optgroups[optgroup.length-1].append(option);
-            var locs = row[0].split(',');
+            var locs = row[COL_LATLNG].replace(/[^0-9\.,]/g,'').split(',');
+            console.log(locs);
             var marker = new google.maps.Marker({
               map: map,
               position: new google.maps.LatLng(parseFloat(locs[0]),parseFloat(locs[1])),
-              icon: 'https://coinsmarkets.com/images/red-circle.png'
+              title: row[COL_NAME],
+              icon: 'http://www.lecraft.pl/Serwery-Minecraft/images/dotsgroups/lightreddot.png'
             });
           }
         }
@@ -42,18 +74,15 @@ function initMap() {
       for (var k in optgroups) {
         $('.select2').append(optgroups[k]);
       }
-      var onChangeHandler = function() {
-        calculateAndDisplayRoute(directionsService, directionsDisplay);
-      };
-      document.getElementById('start').addEventListener('change', onChangeHandler);
-      document.getElementById('end').addEventListener('change', onChangeHandler);
-      document.getElementById('clickfind').addEventListener('click', onChangeHandler);
-
-      $(".select2").select2({ placeholder: "Select start", maximumSelectionSize: 1 });
+      for (var k in facility_types) {
+        var facility_type = facility_types[k];
+        $('.select-facility-type').append($('<option>').attr('value', facility_type).html(facility_type));
+      }
+      $(".select2").select2({ placeholder: "Select facility", maximumSelectionSize: 1 });
+      $(".select-facility-type").select2({ placeholder: "", maximumSelectionSize: 1 });
     }
-  })
-  
-}
+
+function stubify(text) { return text.toLowerCase().replace(/ /g,'_').replace(/[^0-9a-z_]/g); }
 
 function calculateAndDisplayRoute(directionsService, directionsDisplay) {
   var start = document.getElementById('start').value;
