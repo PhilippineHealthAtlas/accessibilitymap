@@ -14,7 +14,7 @@ function initMap() {
     center: {lat: 12.929459, lng: 122.411300}
   })
   directionsDisplay.setMap(map);
-  directionsDisplay.setPanel(document.getElementById('right-panel'));
+  directionsDisplay.setPanel(document.getElementById('directions-panel'));
 
   var control = document.getElementById('floating-panel');
   control.style.display = 'block';
