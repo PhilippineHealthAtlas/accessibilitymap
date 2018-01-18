@@ -19,10 +19,11 @@ function initMap() {
   var control = document.getElementById('floating-panel');
   control.style.display = 'block';
   map.controls[google.maps.ControlPosition.TOP_CENTER].push(control);
-
+  map.markers = [];
   $.ajax('health_facilities'+region+'.tsv', {
     success: function (data, status) {
       reloadData(data, status);
+      currData = data;
       var onChangeHandler = function() {
         calculateAndDisplayRoute(directionsService, directionsDisplay);
       };
@@ -31,10 +32,12 @@ function initMap() {
       document.getElementById('clickfind').addEventListener('click', onChangeHandler);
       
       var onFacilityTypeChange = function(obj) {
+        console.log(obj);
+        console.log("facility type change");
         reloadData(currData, obj.value);
       }
+      $('#start_facility_type').on('change', onFacilityTypeChange);
       //document.getElementById('end_facility_type').addEventListener('change', onFacilityTypeChange);
-      //document.getElementById('start_facility_type').addEventListener('change', onFacilityTypeChange);
     }
   })
   
@@ -43,6 +46,10 @@ function initMap() {
     
     
     function reloadData(data, status) {
+      console.log(status);
+      if (status != 'success') {
+        $('select .select2').select2('destroy').html('');
+      }
       data = data.split("\n");
       currData = data;
       var optgroups = [];
@@ -57,7 +64,7 @@ function initMap() {
             facility_types.push(row[COL_LATLNG]);
             curr_facility_type = row[COL_LATLNG];
           } else if (row.length > 1 && row[COL_NAME].length > 0 && (status == 'success' || status == curr_facility_type)) {
-            var option = $('<option>').attr('value', row[COL_LATLNG].replace(/"/g,'')).html(row[COL_NAME]);
+            var option = $('<option>').attr('value', row[COL_LATLNG].replace(/"/g,'')).html(row[COL_NAME]).data('type', row[COL_TYPE]);
             optgroups[optgroup.length-1].append(option);
             var locs = row[COL_LATLNG].replace(/[^0-9\.,]/g,'').split(',');
             var position = new google.maps.LatLng(parseFloat(locs[0]),parseFloat(locs[1]));
@@ -66,12 +73,13 @@ function initMap() {
               map: map,
               position: position,
               title: row[COL_NAME],
-              icon: 'icons/' + row[COL_TYPE].toLowerCase().replace(/ /g,'_') + '.png'
+              icon: 'icons/' + stubify(row[COL_TYPE]) + '.png'
             });
+            marker.facility_type = row[COL_TYPE];
+            map.markers.push(marker);
           }
         }
       }
-      console.log(bounds);
       map.fitBounds(bounds);
       map.setZoom(map.getZoom()+1);
       for (var k in optgroups) {
@@ -80,12 +88,28 @@ function initMap() {
       for (var k in facility_types) {
         var facility_type = facility_types[k];
         $('.select-facility-type').append($('<option>').attr('value', facility_type).html(facility_type));
+        $('#legend').append($('<div>').html('<input onclick="updateMap()" type="checkbox" value="'+facility_type+'" checked><img src="icons/'+stubify(facility_type)+'.png"> ' + facility_type));
       }
       $(".select2").select2({ placeholder: "Select facility", maximumSelectionSize: 1 });
       $(".select-facility-type").select2({ placeholder: "", maximumSelectionSize: 1 });
     }
 
-function stubify(text) { return text.toLowerCase().replace(/ /g,'_').replace(/[^0-9a-z_]/g); }
+function updateMap() {
+  var legends = $('#legend input'), mapping = {};
+  for (var i in legends) {
+    mapping[legends[i].value] = legends[i].checked;
+  }
+  for (var i in map.markers) {
+    var facility_type = map.markers[i].facility_type;
+    if (!mapping[facility_type])
+      map.markers[i].setMap(null);
+    else 
+      map.markers[i].setMap(map);
+  }
+  console.log(mapping);
+}    
+
+function stubify(text) { return text.toLowerCase().trim().replace(/ /g,'_').replace(/[^0-9a-z_]/g); }
 
 function calculateAndDisplayRoute(directionsService, directionsDisplay) {
   var start = document.getElementById('start').value;
